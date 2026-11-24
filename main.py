@@ -35,13 +35,26 @@ WORD = "unavailable"
 OUTPUT_PATH = Path("/output/entry.txt")
 
 
+def validate_word(word: str) -> str:
+    """Return the word, stripped, after checking it is exactly one word."""
+    cleaned = word.strip()
+    if not cleaned or len(cleaned) > 24 or len(cleaned.split()) != 1:
+        raise SystemExit("entry word must be exactly one word of 1-24 characters")
+    return cleaned
+
+
+def write_entry(word: str) -> None:
+    """Write the word atomically so the file is never left half-written."""
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = OUTPUT_PATH.with_suffix(".tmp")
+    tmp_path.write_text(word, encoding="utf-8")
+    tmp_path.replace(OUTPUT_PATH)
+
+
 def main() -> None:
     """Write the entry word to /output/entry.txt."""
-    word = WORD.strip()
-    if not word or len(word) > 24 or len(word.split()) != 1:
-        raise SystemExit("entry word must be exactly one word of 1-24 characters")
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(word, encoding="utf-8")
+    word = validate_word(WORD)
+    write_entry(word)
 
 
 if __name__ == "__main__":
